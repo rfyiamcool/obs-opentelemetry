@@ -275,6 +275,95 @@ func TestCtxKVLogger(t *testing.T) {
 	}
 }
 
+// TestWithCustomFields test WithCustomFileds option.
+func TestWithCustomFields(t *testing.T) {
+	serviceKey := "service_name"
+	serviceValue := "kitex"
+
+	versionKey := "version"
+	versionValue := "v1.0.1"
+	buf := new(bytes.Buffer)
+
+	t.Run("ctx info", func(t *testing.T) {
+		buf.Reset()
+
+		log := NewLogger(WithCustomFields(serviceKey, serviceValue, versionKey, versionValue))
+		log.SetOutput(buf)
+
+		ctx := context.Background()
+		log.CtxInfof(ctx, "%s log", "extra")
+
+		logStructMap := make(map[string]interface{}, 0)
+
+		err := json.Unmarshal(buf.Bytes(), &logStructMap)
+		assert.Nil(t, err)
+
+		ret, ok := logStructMap[serviceKey]
+		assert.True(t, ok)
+		assert.Equal(t, serviceValue, ret)
+
+		ret, ok = logStructMap[versionKey]
+		assert.True(t, ok)
+		assert.Equal(t, versionValue, ret)
+
+		ret, ok = logStructMap["msg"]
+		assert.True(t, ok)
+		assert.Equal(t, "extra log", ret)
+	})
+
+	t.Run("infof", func(t *testing.T) {
+		buf.Reset()
+
+		log := NewLogger(WithCustomFields(serviceKey, serviceValue, versionKey, versionValue))
+		log.SetOutput(buf)
+
+		log.Infof("%s log", "extra")
+
+		logStructMap := make(map[string]interface{}, 0)
+
+		err := json.Unmarshal(buf.Bytes(), &logStructMap)
+		assert.Nil(t, err)
+
+		ret, ok := logStructMap[serviceKey]
+		assert.True(t, ok)
+		assert.Equal(t, serviceValue, ret)
+
+		ret, ok = logStructMap[versionKey]
+		assert.True(t, ok)
+		assert.Equal(t, versionValue, ret)
+
+		ret, ok = logStructMap["msg"]
+		assert.True(t, ok)
+		assert.Equal(t, "extra log", ret)
+	})
+
+	t.Run("info", func(t *testing.T) {
+		buf.Reset()
+
+		log := NewLogger(WithCustomFields(serviceKey, serviceValue, versionKey, versionValue))
+		log.SetOutput(buf)
+
+		log.Info("extra log")
+
+		logStructMap := make(map[string]interface{}, 0)
+
+		err := json.Unmarshal(buf.Bytes(), &logStructMap)
+		assert.Nil(t, err)
+
+		ret, ok := logStructMap[serviceKey]
+		assert.True(t, ok)
+		assert.Equal(t, serviceValue, ret)
+
+		ret, ok = logStructMap[versionKey]
+		assert.True(t, ok)
+		assert.Equal(t, versionValue, ret)
+
+		ret, ok = logStructMap["msg"]
+		assert.True(t, ok)
+		assert.Equal(t, "extra log", ret)
+	})
+}
+
 // TestWithExtraKeys test WithExtraKeys option
 func TestWithExtraKeys(t *testing.T) {
 	buf := new(bytes.Buffer)
